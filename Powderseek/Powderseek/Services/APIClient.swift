@@ -31,8 +31,11 @@ enum APIError: Error, LocalizedError {
 }
 
 final class APIClient {
-    // Switch this to "https://web-production-56f6d.up.railway.app" for production
-    static let baseURL = "http://localhost:8000"
+    #if DEBUG
+    static let baseURL = "http://127.0.0.1:8000"
+    #else
+    static let baseURL = "https://web-production-56f6d.up.railway.app"
+    #endif
 
     // MARK: - Fetch resort list (called once on launch)
     func fetchResorts() async throws -> [ResortSummary] {

@@ -1,11 +1,16 @@
 import SwiftUI
 
+// Wrapper so we can use sheet(item:) without a retroactive String conformance
+struct ResortSlug: Identifiable {
+    let id: String  // the slug itself
+}
+
 struct ChatView: View {
     @EnvironmentObject var chatVM: ChatViewModel
 
     @State private var inputText = ""
     @State private var showTripForm = false
-    @State private var selectedResortSlug: String? = nil
+    @State private var selectedResort: ResortSlug? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,8 +34,8 @@ struct ChatView: View {
         .sheet(isPresented: $showTripForm) {
             TripInputSheet()
         }
-        .sheet(item: $selectedResortSlug) { slug in
-            ResortDetailSheet(slug: slug)
+        .sheet(item: $selectedResort) { resort in
+            ResortDetailSheet(slug: resort.id)
         }
     }
 
@@ -106,7 +111,7 @@ struct ChatView: View {
                             if msg.role == .assistant && !msg.isStreaming {
                                 ResortChips(
                                     slugs: chatVM.resortSlugs(in: msg.content),
-                                    onTap: { slug in selectedResortSlug = slug }
+                                    onTap: { slug in selectedResort = ResortSlug(id: slug) }
                                 )
                             }
                         }
@@ -178,8 +183,3 @@ struct ChatView: View {
     ]
 }
 
-// Make String Identifiable so we can use it with sheet(item:).
-// The sheet(item:) modifier requires an Identifiable value.
-extension String: @retroactive Identifiable {
-    public var id: String { self }
-}

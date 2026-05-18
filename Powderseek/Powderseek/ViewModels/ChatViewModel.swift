@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 // @MainActor ensures every property update and method call on this class
 // runs on the main thread — required for UI updates. Same problem as
@@ -80,12 +81,33 @@ final class ChatViewModel: ObservableObject {
         for match in matches {
             if let r = Range(match.range(at: 1), in: content) {
                 let text = String(content[r]).lowercased()
-                if let slug = resortNameMap[text], !slugs.contains(slug) {
+                if let slug = matchResort(in: text), !slugs.contains(slug) {
                     slugs.append(slug)
                 }
             }
         }
         return slugs
+    }
+
+    // Tries to find a resort slug in a bold span.
+    // Handles agent patterns like "**Telluride, Colorado. This is your trip.**"
+    // by progressively stripping the text down to just the resort name.
+    private func matchResort(in text: String) -> String? {
+        // 1. Exact match
+        if let slug = resortNameMap[text] { return slug }
+        // 2. First token before any comma, period, colon, or exclamation
+        let firstToken = text
+            .components(separatedBy: CharacterSet(charactersIn: ",.!?:"))
+            .first?
+            .trimmingCharacters(in: .whitespaces) ?? ""
+        if !firstToken.isEmpty, let slug = resortNameMap[firstToken] { return slug }
+        // 3. First word (catches "Niseko United — Top Pick" → "niseko united")
+        let words = firstToken.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+        for length in stride(from: words.count, through: 1, by: -1) {
+            let candidate = words.prefix(length).joined(separator: " ")
+            if candidate.count >= 4, let slug = resortNameMap[candidate] { return slug }
+        }
+        return nil
     }
 
     // MARK: - Send a message

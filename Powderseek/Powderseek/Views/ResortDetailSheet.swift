@@ -64,6 +64,22 @@ struct ResortDetailSheet: View {
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.orange.opacity(0.4), lineWidth: 1))
                 }
 
+                // Out-of-season warning banner
+                if !d.isInSeason {
+                    HStack(spacing: 8) {
+                        Text("❄️")
+                        Text("Closed — currently out of season (\(months[d.seasonStartMonth - 1])–\(months[d.seasonEndMonth - 1]))")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.blue.opacity(0.12))
+                    .foregroundColor(.blue)
+                    .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.blue.opacity(0.4), lineWidth: 1))
+                }
+
                 // Snow conditions
                 sectionHeader("Snow Conditions")
                 let today = d.forecastDays.first

@@ -25,17 +25,22 @@ struct MessageBubble: View {
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .trailing)
                 } else {
-                    // Assistant: render markdown using AttributedString.
-                    // AttributedString(markdown:) parses bold, italic, lists, etc.
-                    // We fall back to plain text if parsing fails (e.g. mid-stream).
-                    //
-                    // The streaming cursor (blinking dot) appears while isStreaming.
-                    Group {
-                        if let attributed = try? AttributedString(markdown: message.content,
-                            options: .init(interpretedSyntax: .inlinesOnlyPreservingWhitespace)) {
-                            Text(attributed)
-                        } else {
-                            Text(message.content)
+                    // Assistant: split into paragraphs so SwiftUI renders visible
+                    // spacing between sections. AttributedString handles bold/italic
+                    // within each paragraph. Single \n inside a paragraph → space
+                    // (CommonMark soft-break rule).
+                    VStack(alignment: .leading, spacing: 8) {
+                        let paragraphs = message.content
+                            .components(separatedBy: "\n\n")
+                            .map { $0.replacingOccurrences(of: "\n", with: " ")
+                                      .trimmingCharacters(in: .whitespaces) }
+                            .filter { !$0.isEmpty }
+                        ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, para in
+                            if let attributed = try? AttributedString(markdown: para) {
+                                Text(attributed)
+                            } else {
+                                Text(para)
+                            }
                         }
                     }
                     .padding(.horizontal, 14)

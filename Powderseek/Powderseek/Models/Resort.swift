@@ -45,6 +45,7 @@ struct ResortDetail: Decodable {
     let vibeTags: [String]
     let budgetTier: String?
     let snowboardAllowed: Bool
+    let isInSeason: Bool
     let forecastDays: [ForecastDay]
 
     enum CodingKeys: String, CodingKey {
@@ -62,6 +63,7 @@ struct ResortDetail: Decodable {
         case vibeTags          = "vibe_tags"
         case budgetTier        = "budget_tier"
         case snowboardAllowed  = "snowboard_allowed"
+        case isInSeason        = "is_in_season"
         case forecastDays      = "forecast_days"
     }
 }
